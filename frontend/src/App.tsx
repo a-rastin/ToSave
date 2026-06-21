@@ -40,6 +40,7 @@ export default function App() {
         setCalendar(u.calendar);
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authed, active]);
 
   if (!authed) return <Login locale={locale} onAuthed={() => setAuthed(true)} />;
@@ -69,7 +70,13 @@ export default function App() {
       <aside className="md:w-64 border-b md:border-b-0 md:border-e border-slate-800 p-4 flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-bold">{t.appName}</h1>
-          <button onClick={() => { clearTokens(); setAuthed(false); }} className="text-xs text-slate-400 hover:text-slate-200">
+          <button
+            onClick={() => {
+              clearTokens();
+              setAuthed(false);
+            }}
+            className="text-xs text-slate-400 hover:text-slate-200"
+          >
             {t.logout}
           </button>
         </div>
@@ -102,20 +109,38 @@ export default function App() {
               }
             }}
           >
-            <input name="p" placeholder={t.newProject} className="w-full bg-transparent text-sm px-3 py-2 text-slate-400 outline-none" />
+            <input
+              name="p"
+              placeholder={t.newProject}
+              className="w-full bg-transparent text-sm px-3 py-2 text-slate-400 outline-none"
+            />
           </form>
         </nav>
 
         <div className="mt-auto border-t border-slate-800 pt-2">
           <Pomodoro locale={locale} />
           <div className="flex gap-1 text-xs justify-center mt-2">
-            <button onClick={() => setPrefs("en", calendar)} className={locale === "en" ? "text-indigo-400" : "text-slate-500"}>EN</button>
+            <button onClick={() => setPrefs("en", calendar)} className={locale === "en" ? "text-indigo-400" : "text-slate-500"}>
+              EN
+            </button>
             <span className="text-slate-700">|</span>
-            <button onClick={() => setPrefs("fa", calendar)} className={locale === "fa" ? "text-indigo-400" : "text-slate-500"}>فا</button>
+            <button onClick={() => setPrefs("fa", calendar)} className={locale === "fa" ? "text-indigo-400" : "text-slate-500"}>
+              فا
+            </button>
             <span className="text-slate-700 mx-1">·</span>
-            <button onClick={() => setPrefs(locale, "gregorian")} className={calendar === "gregorian" ? "text-indigo-400" : "text-slate-500"}>Greg</button>
+            <button
+              onClick={() => setPrefs(locale, "gregorian")}
+              className={calendar === "gregorian" ? "text-indigo-400" : "text-slate-500"}
+            >
+              Greg
+            </button>
             <span className="text-slate-700">|</span>
-            <button onClick={() => setPrefs(locale, "jalali")} className={calendar === "jalali" ? "text-indigo-400" : "text-slate-500"}>Jalali</button>
+            <button
+              onClick={() => setPrefs(locale, "jalali")}
+              className={calendar === "jalali" ? "text-indigo-400" : "text-slate-500"}
+            >
+              Jalali
+            </button>
           </div>
         </div>
       </aside>
@@ -150,7 +175,10 @@ export default function App() {
                 <span className="text-xs text-slate-400">{fmtDate(task.due_date, locale, calendar)}</span>
               )}
               <button
-                onClick={async () => { await api.deleteTask(task.id); refresh(); }}
+                onClick={async () => {
+                  await api.deleteTask(task.id);
+                  refresh();
+                }}
                 className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-rose-400 text-sm"
                 title={t.delete}
               >
