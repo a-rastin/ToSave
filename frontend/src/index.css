@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+/* Zero-distraction: calm dark palette, generous spacing, one accent. */
+:root {
+  color-scheme: dark;
+}
+body {
+  margin: 0;
+  background: #0f172a;
+  color: #e2e8f0;
+  font-family: system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+}
+[dir="rtl"] body {
+  font-family: Tahoma, "Segoe UI", system-ui, sans-serif;
+}
