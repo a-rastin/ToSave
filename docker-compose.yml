@@ -1,14 +1,18 @@
 services:
   db:
     image: postgres:16-alpine
+    # Credentials are NOT stored here. Compose fills these from .env (gitignored).
+    # The :? guard fails fast with a clear message if .env is missing a value.
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-gord}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gord}
-      POSTGRES_DB: ${POSTGRES_DB:-gord}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env (copy .env.example)}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gord}"]
+      # $$ defers expansion to the container's shell, so the username never
+      # appears in the rendered compose config either.
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
       interval: 5s
       timeout: 5s
       retries: 10
