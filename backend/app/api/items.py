@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -12,11 +12,27 @@ from app.schemas import (
     LabelOut,
     ProjectIn,
     ProjectOut,
+    ProjectUpdateIn,
+    ReorderIn,
     TaskIn,
     TaskOut,
     TaskUpdateIn,
 )
 from app.tasks_util import encode_label_ids, next_due, task_out
+
+
+async def _next_position(db: AsyncSession, model, owner_id: int) -> int:
+    cur = await db.scalar(select(func.max(model.position)).where(model.owner_id == owner_id))
+    return (cur or 0) + 1
+
+
+async def _apply_order(db: AsyncSession, model, owner_id: int, ids: list[int]) -> None:
+    rows = (await db.execute(select(model).where(model.owner_id == owner_id))).scalars().all()
+    by_id = {r.id: r for r in rows}
+    for pos, rid in enumerate(ids):
+        if rid in by_id:
+            by_id[rid].position = pos
+    await db.commit()
 
 router = APIRouter(tags=["items"])
 
@@ -24,17 +40,38 @@ router = APIRouter(tags=["items"])
 # ---------------- Projects ----------------
 @router.get("/projects", response_model=list[ProjectOut])
 async def list_projects(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    rows = await db.execute(select(Project).where(Project.owner_id == user.id).order_by(Project.id))
+    rows = await db.execute(
+        select(Project).where(Project.owner_id == user.id).order_by(Project.position, Project.id)
+    )
     return rows.scalars().all()
 
 
 @router.post("/projects", response_model=ProjectOut, status_code=201)
 async def create_project(data: ProjectIn, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    p = Project(owner_id=user.id, **data.model_dump())
+    p = Project(owner_id=user.id, position=await _next_position(db, Project, user.id), **data.model_dump())
     db.add(p)
     await db.commit()
     await db.refresh(p)
     return p
+
+
+@router.patch("/projects/{pid}", response_model=ProjectOut)
+async def update_project(
+    pid: int, data: ProjectUpdateIn, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)
+):
+    p = await db.get(Project, pid)
+    if not p or p.owner_id != user.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND)
+    for k, v in data.model_dump(exclude_unset=True).items():
+        setattr(p, k, v)
+    await db.commit()
+    await db.refresh(p)
+    return p
+
+
+@router.post("/projects/reorder", status_code=204)
+async def reorder_projects(data: ReorderIn, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    await _apply_order(db, Project, user.id, data.ids)
 
 
 @router.delete("/projects/{pid}", status_code=204)
@@ -91,7 +128,7 @@ async def list_tasks(
         q = q.where(Task.project_id == project_id)
     if completed is not None:
         q = q.where(Task.completed == completed)
-    rows = await db.execute(q.order_by(Task.completed, Task.priority.desc(), Task.due_date.is_(None), Task.due_date))
+    rows = await db.execute(q.order_by(Task.completed, Task.position, Task.id))
     return [task_out(t) for t in rows.scalars().all()]
 
 
@@ -99,11 +136,16 @@ async def list_tasks(
 async def create_task(data: TaskIn, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     payload = data.model_dump()
     payload["label_ids"] = encode_label_ids(payload.pop("label_ids"))
-    t = Task(owner_id=user.id, **payload)
+    t = Task(owner_id=user.id, position=await _next_position(db, Task, user.id), **payload)
     db.add(t)
     await db.commit()
     await db.refresh(t)
     return task_out(t)
+
+
+@router.post("/tasks/reorder", status_code=204)
+async def reorder_tasks(data: ReorderIn, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    await _apply_order(db, Task, user.id, data.ids)
 
 
 @router.patch("/tasks/{tid}", response_model=TaskOut)

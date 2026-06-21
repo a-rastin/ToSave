@@ -46,6 +46,16 @@ class ProjectIn(BaseModel):
 class ProjectOut(ProjectIn):
     model_config = ConfigDict(from_attributes=True)
     id: int
+    position: int
+
+
+class ProjectUpdateIn(BaseModel):
+    name: str | None = None
+    color: str | None = None
+
+
+class ReorderIn(BaseModel):
+    ids: list[int]  # the desired order, top to bottom
 
 
 class LabelIn(BaseModel):
@@ -87,11 +97,13 @@ class TaskOut(BaseModel):
     title: str
     notes: str | None
     priority: int
+    position: int
     due_date: date | None
     rrule: str | None
     project_id: int | None
     parent_id: int | None
     completed: bool
+    created_at: datetime
     completed_at: datetime | None
     label_ids: list[int]
 
@@ -104,3 +116,14 @@ class AIChatIn(BaseModel):
 class AIChatOut(BaseModel):
     reply: str
     created_tasks: list[TaskOut] = []
+
+
+# ---- Pomodoro ----
+class PomodoroLogIn(BaseModel):
+    seconds: int = Field(gt=0)
+    task_id: int | None = None
+
+
+class PomodoroStatsOut(BaseModel):
+    today_seconds: int
+    by_day: dict[str, int]  # "YYYY-MM-DD" -> seconds, last 14 days

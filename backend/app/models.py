@@ -32,6 +32,7 @@ class Project(Base):
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     name: Mapped[str] = mapped_column(String(120))
     color: Mapped[str] = mapped_column(String(16), default="#6366f1")
+    position: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
     owner: Mapped["User"] = relationship(back_populates="projects")
@@ -60,7 +61,8 @@ class Task(Base):
 
     title: Mapped[str] = mapped_column(String(500))
     notes: Mapped[str | None] = mapped_column(Text)
-    priority: Mapped[int] = mapped_column(Integer, default=0)  # 0 none .. 3 urgent
+    priority: Mapped[int] = mapped_column(Integer, default=0)  # 0 none, 1 low, 2 medium, 3 high
+    position: Mapped[int] = mapped_column(Integer, default=0)  # manual drag-and-drop order
     due_date: Mapped[date | None] = mapped_column(Date)
     rrule: Mapped[str | None] = mapped_column(String(255))  # iCal RRULE, e.g. FREQ=DAILY
     completed: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -74,3 +76,14 @@ class Task(Base):
     owner: Mapped["User"] = relationship(back_populates="tasks")
     project: Mapped["Project | None"] = relationship(back_populates="tasks")
     subtasks: Mapped[list["Task"]] = relationship(cascade="all, delete-orphan")
+
+
+class PomodoroLog(Base):
+    """One row per completed focus session. Daily total = sum of seconds for a date."""
+    __tablename__ = "pomodoro_logs"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    day: Mapped[date] = mapped_column(Date, index=True)
+    seconds: Mapped[int] = mapped_column(Integer, default=0)
+    task_id: Mapped[int | None] = mapped_column(ForeignKey("tasks.id", ondelete="SET NULL"))

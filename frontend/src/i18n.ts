@@ -3,7 +3,7 @@ export type Locale = "en" | "fa";
 export const dict = {
   en: {
     dir: "ltr",
-    appName: "Gord",
+    appName: "Special Swan",
     tagline: "Say it. It becomes a task.",
     email: "Email",
     password: "Password",
@@ -18,22 +18,36 @@ export const dict = {
     newProject: "New project…",
     addTask: "Add a task…",
     noTasks: "Nothing here. Enjoy the quiet.",
-    askPlaceholder: "Tell me what to do… e.g. “call mom tomorrow, urgent”",
+    askPlaceholder: "Tell me what to do… e.g. “call mom tomorrow, high priority”",
     send: "Send",
     listen: "Voice",
     done: "done",
+    edit: "Rename",
+    save: "Save",
+    cancel: "Cancel",
     delete: "Delete",
-    priority: ["none", "low", "medium", "urgent"],
+    priority: ["None", "Low", "Medium", "High"],
     focus: "Focus",
+    focusToday: "Today's focus",
     start: "Start",
     pause: "Pause",
     reset: "Reset",
     work: "Work",
     break: "Break",
+    list: "List",
+    calendar: "Calendar",
+    timeline: "Timeline",
+    light: "Light",
+    dark: "Dark",
+    noSchedule: "No date",
+    selectProject: "Pick a project to see its timeline.",
+    added: "Added",
+    finished: "Finished",
+    open: "in progress",
   },
   fa: {
     dir: "rtl",
-    appName: "گـُرد",
+    appName: "Special Swan",
     tagline: "بگو، تبدیل به کار می‌شود.",
     email: "ایمیل",
     password: "رمز عبور",
@@ -48,18 +62,32 @@ export const dict = {
     newProject: "پروژهٔ جدید…",
     addTask: "افزودن کار…",
     noTasks: "اینجا خالی است. از آرامش لذت ببرید.",
-    askPlaceholder: "بگو چه کنم… مثلاً «فردا به مامان زنگ بزن، فوری»",
+    askPlaceholder: "بگو چه کنم… مثلاً «فردا به مامان زنگ بزن، اولویت بالا»",
     send: "ارسال",
     listen: "صدا",
     done: "انجام شد",
+    edit: "تغییر نام",
+    save: "ذخیره",
+    cancel: "انصراف",
     delete: "حذف",
-    priority: ["بدون", "کم", "متوسط", "فوری"],
+    priority: ["بدون", "کم", "متوسط", "بالا"],
     focus: "تمرکز",
+    focusToday: "تمرکز امروز",
     start: "شروع",
     pause: "توقف",
     reset: "بازنشانی",
     work: "کار",
     break: "استراحت",
+    list: "فهرست",
+    calendar: "تقویم",
+    timeline: "خط زمانی",
+    light: "روشن",
+    dark: "تیره",
+    noSchedule: "بدون تاریخ",
+    selectProject: "برای دیدن خط زمانی، یک پروژه انتخاب کنید.",
+    added: "افزوده",
+    finished: "پایان",
+    open: "در حال انجام",
   },
 } as const;
 
@@ -69,7 +97,6 @@ export function fmtDate(d: string | null, locale: Locale, calendar: "gregorian" 
   if (!d) return "";
   // Native dual-calendar via Intl — no date library needed.
   const opts: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
-  const loc =
-    calendar === "jalali" ? "fa-IR-u-ca-persian" : locale === "fa" ? "fa-IR" : "en-US";
-  return new Intl.DateTimeFormat(loc, opts).format(new Date(d + "T00:00:00"));
+  const loc = calendar === "jalali" ? "fa-IR-u-ca-persian" : locale === "fa" ? "fa-IR" : "en-US";
+  return new Intl.DateTimeFormat(loc, opts).format(new Date(d.slice(0, 10) + "T00:00:00"));
 }

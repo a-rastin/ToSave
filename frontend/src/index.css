@@ -1,15 +1,45 @@
 @import "tailwindcss";
 
-/* Zero-distraction: calm dark palette, generous spacing, one accent. */
-:root {
+/* Semantic color tokens -> usable as bg-app, bg-panel, text-fg, etc. */
+@theme {
+  --color-app: var(--app);
+  --color-panel: var(--panel);
+  --color-panel2: var(--panel2);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+}
+
+/* Dark is the default (zero-distraction). Light mode flips the same tokens. */
+:root,
+:root[data-theme="dark"] {
+  --app: #0f172a;
+  --panel: #1e293b;
+  --panel2: #334155;
+  --fg: #e2e8f0;
+  --muted: #94a3b8;
+  --line: #1e293b;
   color-scheme: dark;
 }
+:root[data-theme="light"] {
+  --app: #f8fafc;
+  --panel: #ffffff;
+  --panel2: #e2e8f0;
+  --fg: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  color-scheme: light;
+}
+
 body {
   margin: 0;
-  background: #0f172a;
-  color: #e2e8f0;
+  background: var(--app);
+  color: var(--fg);
   font-family: system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
 }
 [dir="rtl"] body {
   font-family: Tahoma, "Segoe UI", system-ui, sans-serif;
+}
+.dragging {
+  opacity: 0.4;
 }

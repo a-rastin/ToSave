@@ -13,11 +13,13 @@ def task_out(t: Task) -> TaskOut:
         title=t.title,
         notes=t.notes,
         priority=t.priority,
+        position=t.position,
         due_date=t.due_date,
         rrule=t.rrule,
         project_id=t.project_id,
         parent_id=t.parent_id,
         completed=t.completed,
+        created_at=t.created_at,
         completed_at=t.completed_at,
         label_ids=ids,
     )

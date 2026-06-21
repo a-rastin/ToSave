@@ -44,8 +44,8 @@ export default function Chatbox({ locale, onTasks }: { locale: Locale; onTasks: 
   }
 
   return (
-    <div className="border-t border-slate-800 p-3 space-y-2">
-      {reply && <p className="text-sm text-cyan-300 px-1">{reply}</p>}
+    <div className="border-t border-line p-3 space-y-2">
+      {reply && <p className="text-sm text-cyan-500 px-1">{reply}</p>}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -54,7 +54,7 @@ export default function Chatbox({ locale, onTasks }: { locale: Locale; onTasks: 
         className="flex gap-2"
       >
         <input
-          className="flex-1 rounded-lg bg-slate-800 px-4 py-3 outline-none focus:ring-2 ring-indigo-500"
+          className="flex-1 rounded-lg bg-panel px-4 py-3 outline-none focus:ring-2 ring-indigo-500"
           placeholder={t.askPlaceholder}
           value={msg}
           onChange={(e) => setMsg(e.target.value)}
@@ -63,13 +63,13 @@ export default function Chatbox({ locale, onTasks }: { locale: Locale; onTasks: 
           type="button"
           onClick={toggleVoice}
           title={t.listen}
-          className={`px-3 rounded-lg ${listening ? "bg-rose-600" : "bg-slate-700 hover:bg-slate-600"}`}
+          className={`px-3 rounded-lg ${listening ? "bg-rose-600 text-white" : "bg-panel2 hover:opacity-80"}`}
         >
           🎤
         </button>
         <button
           disabled={busy}
-          className="px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 font-medium"
+          className="px-4 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-50 font-medium"
         >
           {t.send}
         </button>

@@ -5,15 +5,18 @@ export type Task = {
   title: string;
   notes: string | null;
   priority: number;
+  position: number;
   due_date: string | null;
   rrule: string | null;
   project_id: number | null;
   parent_id: number | null;
   completed: boolean;
+  created_at: string;
   completed_at: string | null;
   label_ids: number[];
 };
-export type Project = { id: number; name: string; color: string };
+export type Project = { id: number; name: string; color: string; position: number };
+export type PomodoroStats = { today_seconds: number; by_day: Record<string, number> };
 
 function getTokens() {
   return {
@@ -101,6 +104,21 @@ export const api = {
   },
   async addProject(name: string): Promise<Project> {
     return (await req("/projects", { method: "POST", body: JSON.stringify({ name }) })).json();
+  },
+  async updateProject(id: number, data: Partial<Project>): Promise<Project> {
+    return (await req(`/projects/${id}`, { method: "PATCH", body: JSON.stringify(data) })).json();
+  },
+  async reorderProjects(ids: number[]) {
+    await req("/projects/reorder", { method: "POST", body: JSON.stringify({ ids }) });
+  },
+  async reorderTasks(ids: number[]) {
+    await req("/tasks/reorder", { method: "POST", body: JSON.stringify({ ids }) });
+  },
+  async pomodoroStats(): Promise<PomodoroStats> {
+    return (await req("/pomodoro/stats")).json();
+  },
+  async logPomodoro(seconds: number, task_id?: number): Promise<PomodoroStats> {
+    return (await req("/pomodoro/log", { method: "POST", body: JSON.stringify({ seconds, task_id }) })).json();
   },
   async chat(message: string): Promise<{ reply: string; created_tasks: Task[] }> {
     return (await req("/ai/chat", { method: "POST", body: JSON.stringify({ message }) })).json();

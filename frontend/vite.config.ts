@@ -10,8 +10,8 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "Gord",
-        short_name: "Gord",
+        name: "Special Swan",
+        short_name: "Special Swan",
         description: "AI to-do, calendar & focus assistant",
         theme_color: "#0f172a",
         background_color: "#0f172a",

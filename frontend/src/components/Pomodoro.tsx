@@ -1,15 +1,27 @@
 import { useEffect, useRef, useState } from "react";
+import { api } from "../api";
 import { dict, type Locale } from "../i18n";
 
 const WORK = 25 * 60;
 const BREAK = 5 * 60;
+
+function fmt(sec: number): string {
+  const h = Math.floor(sec / 3600);
+  const m = Math.round((sec % 3600) / 60);
+  return h ? `${h}h ${m}m` : `${m}m`;
+}
 
 export default function Pomodoro({ locale }: { locale: Locale }) {
   const t = dict[locale];
   const [mode, setMode] = useState<"work" | "break">("work");
   const [left, setLeft] = useState(WORK);
   const [running, setRunning] = useState(false);
+  const [today, setToday] = useState(0);
   const ref = useRef<number | null>(null);
+
+  useEffect(() => {
+    api.pomodoroStats().then((s) => setToday(s.today_seconds)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!running) return;
@@ -19,7 +31,10 @@ export default function Pomodoro({ locale }: { locale: Locale }) {
 
   useEffect(() => {
     if (left > 0) return;
-    // switch phase when the timer hits zero
+    // a phase finished; if it was work, record the focus time
+    if (mode === "work") {
+      api.logPomodoro(WORK).then((s) => setToday(s.today_seconds)).catch(() => {});
+    }
     const next = mode === "work" ? "break" : "work";
     setMode(next);
     setLeft(next === "work" ? WORK : BREAK);
@@ -31,7 +46,7 @@ export default function Pomodoro({ locale }: { locale: Locale }) {
 
   return (
     <div className="text-center py-4">
-      <p className="text-xs uppercase tracking-widest text-slate-400">
+      <p className="text-xs uppercase tracking-widest text-muted">
         {t.focus} · {mode === "work" ? t.work : t.break}
       </p>
       <p className="text-5xl font-mono my-2 tabular-nums">
@@ -40,7 +55,7 @@ export default function Pomodoro({ locale }: { locale: Locale }) {
       <div className="flex gap-2 justify-center">
         <button
           onClick={() => setRunning((r) => !r)}
-          className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-sm"
+          className="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-sm"
         >
           {running ? t.pause : t.start}
         </button>
@@ -50,11 +65,14 @@ export default function Pomodoro({ locale }: { locale: Locale }) {
             setMode("work");
             setLeft(WORK);
           }}
-          className="px-4 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-sm"
+          className="px-4 py-1.5 rounded-lg bg-panel2 hover:opacity-80 text-sm"
         >
           {t.reset}
         </button>
       </div>
+      <p className="text-xs text-muted mt-2">
+        {t.focusToday}: <span className="text-fg font-medium">{fmt(today)}</span>
+      </p>
     </div>
   );
 }
